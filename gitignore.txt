@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Ignore data directory
+SsvepData/
+
 # C extensions
 *.so
 
