@@ -95,7 +95,75 @@ def plot_raw_data(data, subject, channels_to_plot):
     plt.savefig(f'SSVEP_S{subject}_rawdata.png')
 
 #%% Part 3: Extract the Epochs
+def epoch_ssvep_data(data_dict, epoch_start_time = 0, epoch_end_time = 20):
+  
+  event_samples = data_dict['event_samples']
+  event_types = data_dict['event_types']
+  event_durations = data_dict['event_durations']
+  all_channels = list(data_dict['channels'])
+  
+  list_of_channel_epoch_arrays = [] 
+  
+  for channel in all_channels:
+    channel_idx = all_channels.index(channel)
+    eeg_data = data['eeg'][channel_idx]
+    epoch_list = [] 
+    for i in range(len(event_samples)):
+      start = event_samples[i]
+      end = event_samples[i] + int(event_durations[i])
+      #print(start,end)
+      epoch_i = eeg_data[start:end]
+      epoch_list.append(epoch_i)
+
+    epoch_array = np.stack(epoch_list)
+    #epoch_array = np.reshape(epoch_array, (20,1,20000))
+    list_of_channel_epoch_arrays.append(epoch_array)
+  eeg_epochs = np.stack(list_of_channel_epoch_arrays, axis = 1)
+  epoch_times = np.linspace(epoch_start_time, epoch_end_time, int(data_dict['fs'] * (epoch_end_time - epoch_start_time)))
+  is_trial_15Hz = [True if x == '15hz' else False for x in event_types] 
+  return eeg_epochs, epoch_times, np.array(is_trial_15Hz)
 
 #%% Part 4: Take the Fourier Transform
 
+
+def get_frequency_spectrum(eeg_epochs, fs):
+  eeg_epochs_fft = np.fft.rfft(eeg_epochs)
+  fft_frequencies = np.fft.rfftfreq(n = eeg_epochs.shape[-1], d = 1/fs)
+  return eeg_epochs_fft, fft_frequencies
+
 #%% Part 5: Plot the Power Spectra
+
+def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15hz, channels, channels_to_plot, subject):
+
+  channels = list(channels)
+  a15 = eeg_epochs_fft[is_trial_15hz]
+  a12 = eeg_epochs_fft[~is_trial_15hz]
+  
+
+  a15_power = np.abs(a15) ** 2
+  a12_power = np.abs(a12) ** 2 
+
+  a15_power_mean_across_trials = a15_power.mean(0)
+  a12_power_mean_across_trials = a12_power.mean(0)
+  normalized_a15_power_mean_across_trials = a15_power_mean_across_trials / np.max(a15_power_mean_across_trials)
+  normalized_a12_power_mean_across_trials = a12_power_mean_across_trials / np.max(a12_power_mean_across_trials)
+  spectrum_db_15Hz = 10 * np.log10(normalized_a15_power_mean_across_trials)
+  spectrum_db_12Hz = 10 * np.log10(normalized_a12_power_mean_across_trials)
+
+  
+
+  channel_to_plot_idx = [channels.index(channel)for channel in channels_to_plot]
+
+  fig, ax = plt.subplots(len(channels_to_plot))
+  for idx, num in enumerate(channel_to_plot_idx):
+    ax[idx].plot(fft_frequencies, spectrum_db_15Hz[num,:])
+    ax[idx].plot(fft_frequencies, spectrum_db_12Hz[num,:])
+    ax[idx].set_xlim(0,80)
+    ax[idx].set_title(channels_to_plot[idx] + " frequency content for SSVEP S" + str(subject))
+    ax[idx].legend(["15Hz","12Hz"])
+  fig.tight_layout()
+  plt.show()
+  return spectrum_db_15Hz, spectrum_db_12Hz
+
+
+
