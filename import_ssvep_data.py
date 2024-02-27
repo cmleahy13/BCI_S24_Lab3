@@ -34,6 +34,34 @@ def load_ssvep_data(subject, data_directory='SsvepData/'):
     return data_dict
 
 #%% Part 2: Plot the Data
+def plot_raw_data(data, subject, channels_to_plot):
+    
+    # create a list of all of the channels
+    all_channels = list(data['channels']) # indexing error
+    
+    # define time axis
+    t = np.arange(data['eeg'].T) # tentative, number of samples
+    
+    # initialize figure
+    fig, ax = plt.subplots(2)
+    
+    # top subplot to contain event start/end times, types
+    #ax[0].plot(data[''])
+    
+    # bottom subplot to contain raw data from specified electrodes
+    for channel_number, channel_name in enumerate(channels_to_plot):
+      
+        channel_index = all_channels.index(channel_name) # index of channel of interest considering all channels
+        
+        eeg_data = data['eeg'][channel_index] # define EEG data for the channel
+    
+        ax[1].plot(t, eeg_data) # plot EEG data from given channel
+        #ax[1].set_title(f"Channel {channel} EEG plot")
+    
+    fig.tight_layout()
+    
+    # save image
+    plt.savefig(f'SSVEP_S{subject}_rawdata.png')
 
 #%% Part 3: Extract the Epochs
 
