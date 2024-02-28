@@ -37,20 +37,20 @@ spectrum_db_15Hz, spectrum_db_12Hz = plot_power_spectrum(eeg_epochs_fft, fft_fre
 
 #%% Run everything for S2
 
-data_dict2 = load_ssvep_data(subject=2, data_directory='SsvepData/')
+# data_dict2 = load_ssvep_data(subject=2, data_directory='SsvepData/')
 
-plot_raw_data(data=data_dict2, subject=2, channels_to_plot=['Fz','Oz'])
+# plot_raw_data(data=data_dict2, subject=2, channels_to_plot=['Fz','Oz'])
 
-eeg_epochs2, epoch_times2, is_trial_15Hz2 = epoch_ssvep_data(data_dict2, epoch_start_time=0, epoch_end_time=20)
+# eeg_epochs2, epoch_times2, is_trial_15Hz2 = epoch_ssvep_data(data_dict2, epoch_start_time=0, epoch_end_time=20)
 
-eeg_epochs_fft2, fft_frequencies2 = get_frequency_spectrum(eeg_epochs2, fs=data_dict2['fs'])
+# eeg_epochs_fft2, fft_frequencies2 = get_frequency_spectrum(eeg_epochs2, fs=data_dict2['fs'])
 
-spectrum_db_15Hz2, spectrum_db_12Hz2 = plot_power_spectrum(eeg_epochs_fft2, fft_frequencies2, is_trial_15Hz2, channels=data_dict2['channels'], channels_to_plot=['Fz','Oz'], subject=2)
+# spectrum_db_15Hz2, spectrum_db_12Hz2 = plot_power_spectrum(eeg_epochs_fft2, fft_frequencies2, is_trial_15Hz2, channels=data_dict2['channels'], channels_to_plot=['Fz','Oz'], subject=2)
 
 
 #%% Part 6: Reflect
 
-# need to include citations
+# need to include citations, more thorough answer for 4
 
 """
 1. On some electrodes, there are peaks in the spectra at 12Hz for 12Hz trials and 15Hz for 15Hz trials. What is the name for the brain signal that leads to these peaks? Where in the brain do they originate and why (i.e., what function does this brain region serve)?

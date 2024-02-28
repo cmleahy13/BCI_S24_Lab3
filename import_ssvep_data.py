@@ -16,7 +16,6 @@ Sources:
 # import statements
 import numpy as np
 from matplotlib import pyplot as plt
-import scipy.fft
 
 #%% Part 1: Load the Data
 def load_ssvep_data(subject, data_directory='SsvepData/'):
@@ -128,31 +127,24 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     event_types = data_dict['event_types']
     time_per_epoch = int(fs*(epoch_end_time-epoch_start_time)) # convert to int
     
-    list_of_channel_epoch_arrays = []
+    # preallocate array to contain epochs
+    eeg_epochs = np.zeros([len(event_samples),len(channels), time_per_epoch])
     
-    for channel in channels:
+    # generate the epochs
+    for epoch_index in range(len(event_samples)): # each item in event_samples is the corresponding epoch start time, effectively making it the epoch_index
         
-        channel_index = channels.index(channel)
-        eeg_data = eeg[channel_index]
-        epoch_list = [] 
-        
-        for sample_index in range(len(event_samples)):
-            start = event_samples[sample_index]
-            end = event_samples[sample_index] + int(event_durations[sample_index])
-            epoch_index = eeg_data[start:end]
-            epoch_list.append(epoch_index)
-    
-        epoch_array = np.stack(epoch_list)
-    
-        list_of_channel_epoch_arrays.append(epoch_array)
-   
-    eeg_epochs = np.stack(list_of_channel_epoch_arrays, axis=1)
-    
+        for channel_index in range(len(channels)):
+            
+            start_index = event_samples[epoch_index] # find start index for EEG data
+            end_index = start_index + int(event_durations[epoch_index]) # find end index for EEG data
+
+            eeg_epochs[epoch_index][channel_index] = eeg[channel_index][start_index:end_index] # extract EEG data in epoch for a channel over the epoch window
+            
+    # create array containing the times for each sample in the epoch
     epoch_times = np.linspace(epoch_start_time, epoch_end_time, time_per_epoch)
     
-    is_trial_15Hz = [True if event == '15hz' else False for event in event_types]
-    
-    is_trial_15Hz = np.array(is_trial_15Hz)
+    # create boolean array containing True if the event is a 15Hz sample, False if 12Hz
+    is_trial_15Hz = np.array([True if event == '15hz' else False for event in event_types])
     
     return eeg_epochs, epoch_times, is_trial_15Hz
 
