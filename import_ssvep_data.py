@@ -31,18 +31,19 @@ def load_ssvep_data(subject, data_directory='SsvepData/'):
     """
     Description
     -----------
+    Function to load in the SSVEP data from Python's MNE dataset as a dictionary.
 
     Parameters
     ----------
-    subject : TYPE
-        DESCRIPTION.
-    data_directory : TYPE, optional
-        DESCRIPTION. The default is 'SsvepData/'.
+    subject : int
+        The subject for which the data will be loaded.
+    data_directory : string, optional
+        The local directory in which the SSVEP data is contained. The default is 'SsvepData/'.
 
     Returns
     -------
-    data_dict : TYPE
-        DESCRIPTION.
+    data_dict : dict, size 6
+        Data from Python's MNE SSVEP dataset as a dictionary object, where the fields are relevant features of the data.
 
     """
     
@@ -66,15 +67,16 @@ def plot_raw_data(data, subject, channels_to_plot):
     """
     Description
     -----------
+    Function that plots the EEG data and the event type (12Hz or 15Hz) in the time domain.
 
     Parameters
     ----------
-    data : TYPE
-        DESCRIPTION.
-    subject : TYPE
-        DESCRIPTION.
-    channels_to_plot : TYPE
-        DESCRIPTION.
+    data : dict, size 6
+        Data from Python's MNE SSVEP dataset as a dictionary object, where the fields are relevant features of the data.
+    subject : int
+        The subject for which the data will be plotted.
+    channels_to_plot : list, size Cx1, where C is the number of channels to be plotted
+        Input containing which channels will be plotted.
 
     Returns
     -------
@@ -167,21 +169,21 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
 
     Parameters
     ----------
-    data_dict : TYPE
-        DESCRIPTION.
-    epoch_start_time : TYPE, optional
-        DESCRIPTION. The default is 0.
-    epoch_end_time : TYPE, optional
-        DESCRIPTION. The default is 20.
+    data : dict, size 6
+        Data from Python's MNE SSVEP dataset as a dictionary object, where the fields are relevant features of the data.
+    epoch_start_time : int, optional
+        The relative time in seconds at which the epoch starts. The default is 0.
+    epoch_end_time : int, optional
+        The relative time in seconds at which the epoch ends. The default is 20.
 
     Returns
     -------
-    eeg_epochs : TYPE
-        DESCRIPTION.
-    epoch_times : TYPE
-        DESCRIPTION.
-    is_trial_15Hz : TYPE
-        DESCRIPTION.
+    eeg_epochs : array of floats, size ExCxS, where E is the number of epochs, C is the number of channels, and S is the number of samples within the epoch
+        Array containing the EEG data in volts from each of the electrode channels organized by periods of time in which an event (12Hz or 15Hz flashes) occurs.
+    epoch_times : array of floats, size Sx1, where S is the number of samples within each epoch
+        Array containing the relative times in seconds of each sample within an epoch.
+    is_trial_15Hz : array of boolean, size Ex1, where E is the number of epochs (or events)
+        Array containing True if the epoch is an event at 15Hz, False if the epoch is an event at 12Hz.
 
     """
   
@@ -200,7 +202,7 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     # generate the epochs
     for epoch_index in range(len(event_samples)): # each item in event_samples is the corresponding epoch start time, effectively making it the epoch_index
         
-        for channel_index in range(len(channels)):
+        for channel_index in range(len(channels)): # organize data by channel
             
             start_index = event_samples[epoch_index] # find start index for EEG data
             end_index = start_index + int(event_durations[epoch_index]) # find end index for EEG data
