@@ -19,6 +19,7 @@ Sources:
 
     - Avoiding printing "dict_keys" data type: https://blog.finxter.com/python-print-dictionary-keys-without-dict_keys/
     - Setting axis tickmarks: ChatGPT
+    - Adding tickmarks when sharex=True: https://stackoverflow.com/questions/4209467/matplotlib-share-x-axis-but-dont-show-x-axis-tick-labels-for-both-just-one
     
 """
 
@@ -166,6 +167,7 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     """
     Description
     -----------
+    Function that takes in the data dictionary as well as relative start and end times for a given epoch to organize the EEG data by channel and event type.
 
     Parameters
     ----------
@@ -223,20 +225,21 @@ def get_frequency_spectrum(eeg_epochs, fs):
     """
     Description
     -----------
+    Function that takes the Fourier Transform of the epoched EEG data and provides the corresponding frequencies.
 
     Parameters
     ----------
-    eeg_epochs : TYPE
-        DESCRIPTION.
-    fs : TYPE
-        DESCRIPTION.
+    eeg_epochs : array of floats, size ExCxS, where E is the number of epochs, C is the number of channels, and S is the number of samples within the epoch
+        Array containing the EEG data in volts from each of the electrode channels organized by periods of time in which an event (12Hz or 15Hz flashes) occurs.
+    fs : array of float, size 1
+        The sampling frequency of the data obtained in the 'fs' key of data_dict.
 
     Returns
     -------
-    eeg_epochs_fft : TYPE
-        DESCRIPTION.
-    fft_frequencies : TYPE
-        DESCRIPTION.
+    eeg_epochs_fft : array of complex numbers, size ExCx((fs/2)+1), where E is the number of epochs, C is the number of channels, and fs is the sampling frequency
+        The EEG data converted to the frequency space for each epoch and channel.
+    fft_frequencies : array of floats, size (fs/2)+1, where fs is the sampling frequency
+        Array containing sample frequencies.
 
     """
   
@@ -254,35 +257,36 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
     """
     Description
     -----------
+    Function that uses the Fourier Transform of the epoched EEG data to compute and plot the power spectra of different electrodes.
 
     Parameters
     ----------
-    eeg_epochs_fft : TYPE
-        DESCRIPTION.
-    fft_frequencies : TYPE
-        DESCRIPTION.
-    is_trial_15Hz : TYPE
-        DESCRIPTION.
-    channels : TYPE
-        DESCRIPTION.
-    channels_to_plot : TYPE
-        DESCRIPTION.
-    subject : TYPE
-        DESCRIPTION.
+    eeg_epochs_fft : array of complex numbers, size ExCx((fs/2)+1), where E is the number of epochs, C is the number of channels, and fs is the sampling frequency
+        The EEG data converted to the frequency space for each epoch and channel.
+    fft_frequencies : array of floats, size (fs/2)+1, where fs is the sampling frequency
+        Array containing sample frequencies.
+    is_trial_15Hz : array of boolean, size Ex1, where E is the number of epochs (or events)
+        Array containing True if the epoch is an event at 15Hz, False if the epoch is an event at 12Hz.
+    channels : array of str, size Cx1, where C is the number of channels in the dataset (32)
+        Array containing strings with the name of each electrode/channel in the dataset.
+    channels_to_plot : list, size Cx1, where C is the number of channels to be plotted
+        Input containing which channels will be plotted.
+    subject : int
+        The subject for which the data will be loaded.
 
     Returns
     -------
-    spectrum_db_15Hz : TYPE
-        DESCRIPTION.
-    spectrum_db_12Hz : TYPE
-        DESCRIPTION.
+    spectrum_db_15Hz : array of float, size Cx((fs/2)+1), where C is the number of channels and fs is the sampling frequency
+        Array containing the power spectrum of the 15Hz events for each channel.
+    spectrum_db_12Hz : array of float, size Cx((fs/2)+1), where C is the number of channels and fs is the sampling frequency
+        Array containing the power spectrum of the 12Hz events for each channel..
 
     """
 
     # convert channels to list
     channels = list(channels)
     
-    # calculating power spectra
+    # calculate power spectra
     # isolate frequency spectra by event type (12Hz or 15Hz)
     event_15 = eeg_epochs_fft[is_trial_15Hz]
     event_12 = eeg_epochs_fft[~is_trial_15Hz]
@@ -308,9 +312,9 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
     channel_to_plot = [channels.index(channel_name) for channel_name in channels_to_plot]
     
     # set up figure
-    figure, channel_plot = plt.subplots(len(channels_to_plot))
+    figure, channel_plot = plt.subplots(len(channels_to_plot), sharex=True)
     
-    for plot_index, channel in enumerate(channel_to_plot): # plot_index as a means of accessing a subplot
+    for plot_index, channel in enumerate(channel_to_plot): # plot_index to access a subplot
         
         # plot the power spectra by event type
         channel_plot[plot_index].plot(fft_frequencies, spectrum_db_12Hz[channel,:], color='red')
@@ -319,6 +323,7 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
         # formatting subplot
         channel_plot[plot_index].set_xlim(0,80)
         channel_plot[plot_index].set_xlabel('frequency (Hz)')
+        channel_plot[plot_index].tick_params(labelbottom=True) # shows numerical frequency values for each subplot when sharex=True
         channel_plot[plot_index].set_ylabel('power (dB)')
         channel_plot[plot_index].set_title(f'Channel {channels_to_plot[plot_index]}')
         channel_plot[plot_index].legend(['12Hz','15Hz'], loc='best')
@@ -334,5 +339,5 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
     
     # save image
     plt.savefig(f'SSVEP_S{subject}_frequency_content.png')
-    
+        
     return spectrum_db_15Hz, spectrum_db_12Hz

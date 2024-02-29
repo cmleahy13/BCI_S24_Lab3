@@ -56,8 +56,7 @@ spectrum_db_15Hz, spectrum_db_12Hz = plot_power_spectrum(eeg_epochs_fft, fft_fre
 
 # eeg_epochs_fft2, fft_frequencies2 = get_frequency_spectrum(eeg_epochs2, fs=data_dict2['fs'])
 
-# spectrum_db_15Hz2, spectrum_db_12Hz2 = plot_power_spectrum(eeg_epochs_fft2, fft_frequencies2, is_trial_15Hz2, channels=data_dict2['channels'], channels_to_plot=['Fz','Oz'], subject=2)
-
+#spectrum_db_15Hz2, spectrum_db_12Hz2 = plot_power_spectrum(eeg_epochs_fft2, fft_frequencies2, is_trial_15Hz2, channels=data_dict2['channels'], channels_to_plot=['Fz','Oz'], subject=2)
 
 #%% Part 6: Reflect
 
