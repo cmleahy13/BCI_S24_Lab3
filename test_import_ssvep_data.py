@@ -3,7 +3,18 @@
 """
 Created on Sun Feb 25 22:02:31 2024
 
+test_import_ssvep_data.py
+
+This file serves as the test script for BCI Spring 2024 Lab 03. The functions defined in the module are called to evaluate the SSVEP data for subject 1 in both the time and frequency domains. Effectively, this script generates the plots that allow for the visualization of the data and saves them locally as image files. The production of this data allows for a deeper analysis of what the data truly represent, provided in a multiline comment at the end of this script.
+
+Useful abbreviations:
+    EEG: electroencephalography
+    SSVEP: steady-state visual evoked potentials
+    fs: sampling frequency
+    FFT: Fast Fourier Transform
+
 @author: Peijin Chen and Claire Leahy
+
 """
 
 # import applicable functions from module

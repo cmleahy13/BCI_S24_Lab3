@@ -3,22 +3,48 @@
 """
 Created on Sun Feb 25 22:00:05 2024
 
-@author: Peijin Chen and Claire Leahy
+import_ssvep_data.py
+
+This file serves as the module script for BCI Spring 2024 Lab 03. Below, several functions are defined with the ultimate goals of loading and plotting SSVEP data in both the time and frequency domains. load_ssvep_data() allows the user to load in all data relevant to this lab, the return of which is utilized across multiple of the remaining functions. The plot_raw_data() function plots aspects of the data, such as EEG, in the time domain, as well as identifies the frequency of the sample. epoch_ssvep_data() isolates fragments of the data based on periods of time in which the sample is experiencing a 12Hz or 15Hz trial. Finally, get_frequency_spectrum() and plot_power_spectrum() are two functions that are used to convert the aforementioned data into the frequency domain and plot it.
+
+Useful abbreviations:
+    EEG: electroencephalography
+    SSVEP: steady-state visual evoked potentials
+    fs: sampling frequency
+    FFT: Fast Fourier Transform
+
+@authors: Peijin Chen and Claire Leahy
 
 Sources:
-    
-    Avoiding printing "dict_keys" data type: https://blog.finxter.com/python-print-dictionary-keys-without-dict_keys/
-    
-    Setting axis tickmarks: ChatGPT
+
+    - Avoiding printing "dict_keys" data type: https://blog.finxter.com/python-print-dictionary-keys-without-dict_keys/
+    - Setting axis tickmarks: ChatGPT
     
 """
 
-# import statements
+# import packages
 import numpy as np
 from matplotlib import pyplot as plt
 
 #%% Part 1: Load the Data
 def load_ssvep_data(subject, data_directory='SsvepData/'):
+    """
+    Description
+    -----------
+
+    Parameters
+    ----------
+    subject : TYPE
+        DESCRIPTION.
+    data_directory : TYPE, optional
+        DESCRIPTION. The default is 'SsvepData/'.
+
+    Returns
+    -------
+    data_dict : TYPE
+        DESCRIPTION.
+
+    """
     
     # load data
     data = np.load(f'{data_directory}SSVEP_S{subject}.npz', allow_pickle=True)
@@ -37,6 +63,24 @@ def load_ssvep_data(subject, data_directory='SsvepData/'):
 #%% Part 2: Plot the Data
 
 def plot_raw_data(data, subject, channels_to_plot):
+    """
+    Description
+    -----------
+
+    Parameters
+    ----------
+    data : TYPE
+        DESCRIPTION.
+    subject : TYPE
+        DESCRIPTION.
+    channels_to_plot : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     
     # extract data
     eeg = data['eeg']
@@ -117,6 +161,29 @@ def plot_raw_data(data, subject, channels_to_plot):
 #%% Part 3: Extract the Epochs
 
 def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
+    """
+    Description
+    -----------
+
+    Parameters
+    ----------
+    data_dict : TYPE
+        DESCRIPTION.
+    epoch_start_time : TYPE, optional
+        DESCRIPTION. The default is 0.
+    epoch_end_time : TYPE, optional
+        DESCRIPTION. The default is 20.
+
+    Returns
+    -------
+    eeg_epochs : TYPE
+        DESCRIPTION.
+    epoch_times : TYPE
+        DESCRIPTION.
+    is_trial_15Hz : TYPE
+        DESCRIPTION.
+
+    """
   
     # extract data
     eeg = data_dict['eeg']
@@ -138,7 +205,7 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
             start_index = event_samples[epoch_index] # find start index for EEG data
             end_index = start_index + int(event_durations[epoch_index]) # find end index for EEG data
 
-            eeg_epochs[epoch_index][channel_index] = eeg[channel_index][start_index:end_index] # extract EEG data in epoch for a channel over the epoch window
+            eeg_epochs[epoch_index][channel_index] = eeg[channel_index][start_index:end_index] # extract EEG data in epoch for a channel over epoch window
             
     # create array containing the times for each sample in the epoch
     epoch_times = np.linspace(epoch_start_time, epoch_end_time, time_per_epoch)
@@ -151,6 +218,25 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
 #%% Part 4: Take the Fourier Transform
 
 def get_frequency_spectrum(eeg_epochs, fs):
+    """
+    Description
+    -----------
+
+    Parameters
+    ----------
+    eeg_epochs : TYPE
+        DESCRIPTION.
+    fs : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    eeg_epochs_fft : TYPE
+        DESCRIPTION.
+    fft_frequencies : TYPE
+        DESCRIPTION.
+
+    """
   
     # take the Fourier Transform of the epoched EEG data
     eeg_epochs_fft = np.fft.rfft(eeg_epochs)
@@ -163,6 +249,33 @@ def get_frequency_spectrum(eeg_epochs, fs):
 #%% Part 5: Plot the Power Spectra
 
 def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels, channels_to_plot, subject):
+    """
+    Description
+    -----------
+
+    Parameters
+    ----------
+    eeg_epochs_fft : TYPE
+        DESCRIPTION.
+    fft_frequencies : TYPE
+        DESCRIPTION.
+    is_trial_15Hz : TYPE
+        DESCRIPTION.
+    channels : TYPE
+        DESCRIPTION.
+    channels_to_plot : TYPE
+        DESCRIPTION.
+    subject : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    spectrum_db_15Hz : TYPE
+        DESCRIPTION.
+    spectrum_db_12Hz : TYPE
+        DESCRIPTION.
+
+    """
 
     # convert channels to list
     channels = list(channels)
