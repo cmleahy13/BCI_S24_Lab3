@@ -65,18 +65,25 @@ spectrum_db_15Hz, spectrum_db_12Hz = plot_power_spectrum(eeg_epochs_fft, fft_fre
 """
 1. On some electrodes, there are peaks in the spectra at 12Hz for 12Hz trials and 15Hz for 15Hz trials. What is the name for the brain signal that leads to these peaks? Where in the brain do they originate and why (i.e., what function does this brain region serve)?
     
-    a. Steady-state visual evoked potentials (SSVEPs) are the signals that provide the peaks in those spectra. Steady-state refers to the repetitive nature of the flashes presented to the BCI user, and visual evoked potentials are voltages (brain signals measured using electroencephalography) that appear in the signal due to a visual external stimulus. Generally, these peaks are observed within the occipital lobe, which is largely responsible for processign visual data.
+    a. Steady-state visual evoked potentials (SSVEPs) are the signals that provide the peaks in those spectra [1]. Steady-state refers to the repetitive nature of the flashes presented to the BCI user, and visual evoked potentials are voltages (brain signals measured using electroencephalography) that appear in the signal due to a visual external stimulus. Generally, these peaks are observed within the occipital lobe, which is largely responsible for processign visual data [1].
 
 2. There are smaller peaks at integer multiples of these peak frequencies. What do you call these integer multiples? Why might we see them in the data?
     
-    a. These peaks at multiples of the event frequencies are known as harmonics. They occur due to neuronal responses to stimuli, as the neurons respond in a nonlinear fashion.
+    a. These peaks at multiples of the event frequencies are known as harmonics. They occur due to neuronal responses to stimuli, as the neurons respond in a nonlinear fashion [1].
 
 3. There’s a peak in the spectra at 50Hz. What is the most likely cause for this peak?
     
-    a. This peak at 50Hz is very likely to be an artifact related to utility frequency. In many regions, 50Hz is the frequency of the alternating current electrical supply, and this electricity can interfere with the signal detected by the electrodes.
+    a. This peak at 50Hz is very likely to be an artifact related to utility frequency. In many regions, 50Hz is the frequency of the alternating current electrical supply, and this electricity can interfere with the signal detected by the electrodes [2]. This signal is often detected as a consequence of poor electrode connection to the scalp [3]; this occurrence is perhaps intuitive given the electrodes at which this 50Hz peak is observed, as the peak is most commonly found at more central electode locations, suggesting factors like hair growth patterns or concentration may prevent ideal connection between the scalp and electode.
 
 4. Besides the sharp peaks just described, there’s a frequency spectrum where the power is roughly proportional to 1 over the frequency. This is a common pattern in biological signals and is sometimes called “1/f” or “neural noise” in EEG. But on top of that, there’s a slight upward bump around 10 Hz on some electrodes. What brain signal might cause this extra power at about 10Hz? Which channels is it most prominently observed on, and why might this be?
     
-    a. Alpha waves?
+    a. It is likely that this slight increase around 10Hz is due to alpha wave activity. Alpha brain waves are commonly associated with being in a relaxed state and passive attention [4], which is likely the state in which the participant is experiencing the flashes within the trial. Moreover, the frequency of these waves tends to occur between 8-12Hz [4], further supporting this assertion given the graphical evidence: The "bump" appears to occur around a range of frequencies (around 10Hz) rather than strictly at 10Hz, suggesting the presence of a signal that exhibits a characteristic range of frequencies. The alpha band is interestingly most notable where the 50Hz signal (supposedly interference) is prevalent, though this is not a hard rule.
+    Just under half of the electrodes exhibited the 10Hz bump for either or both subjects: Fz, F4, FC1, C3, Cz, C4, CP1, CP2, P3, Pz, P4, O1, Oz, and O2 demonstrated the increased prevalence of signals with roughly 10Hz frequency. These electrodes are all more centralized.
+    
+Sources:
+    [1] D. Jangraw, “13_SSVEPs,” University of Vermont, Feb. 27, 2024.
+    [2] A. de Cheveigné, “ZapLine: A simple and effective method to remove power line artifacts,” NeuroImage, vol. 207, p. 116356, Feb. 2020, doi: 10.1016/j.neuroimage.2019.116356.
+    [3] “Signal Quality - Recognize and achieve a good EEG signal,” brain-trainer.com. Accessed: Mar. 01, 2024. [Online]. Available: https://brain-trainer.com/support/resources/signal-quality-recognize-and-achieve-good-eeg-signal/
+    [4] “Brain Waves - an overview | ScienceDirect Topics.” Accessed: Mar. 01, 2024. [Online]. Available: https://www.sciencedirect.com/topics/agricultural-and-biological-sciences/brain-waves
 
 """
