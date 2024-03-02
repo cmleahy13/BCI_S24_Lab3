@@ -58,7 +58,7 @@ def load_ssvep_data(subject, data_directory):
     data_dict = {'eeg': data['eeg'], 'channels': data['channels'], 'fs': data['fs'], 'event_samples': data['event_samples'], 'event_durations': data['event_durations'], 'event_types': data['event_types']}
     
     # printing to inform user of some data features
-    print(f'Data keys: {list(data_dict.keys())}') # list conversion prevents printing data type
+    print(f'Data keys: {list(data_dict.keys())}') # list conversion prevents printing data type, adapted from blog.finxter.com
     print('\nChannels: ', data['channels'])
     print('\nSampling frequency (Hz):', data['fs'])
     
@@ -97,9 +97,11 @@ def plot_raw_data(data, subject, channels_to_plot):
     event_types = data['event_types']
     
     # find all sample times
+    # code adapted from ChatGPT based on our original code
     t = np.arange(len(eeg.T))*(1/fs) # number of samples spaced by 1, subsequently converted to time
     
     # find event samples and times
+    # code adapted from ChatGPT based on our original code
     event_intervals = np.zeros([len(event_samples),2]) # array to contain interval times
     # find the end sample indices of the events
     event_ends = event_samples + event_durations # event_samples contains the start samples
@@ -142,7 +144,7 @@ def plot_raw_data(data, subject, channels_to_plot):
     sub_figure[0].set_xlabel('time(s)')
     sub_figure[0].set_ylabel('Flash frequency')
     sub_figure[0].set_yticks([12,15])
-    sub_figure[0].set_yticklabels(['12Hz','15Hz'])
+    sub_figure[0].set_yticklabels(['12Hz','15Hz']) # made aware of function by ChatGPT
     sub_figure[0].grid()
     
     # subplot 2: EEG data over time
@@ -204,6 +206,7 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     eeg_epochs = np.zeros([len(event_samples),len(channels), samples_per_epoch])
     
     # load data into array by epoch
+    # code adapted from ChatGPT based on our original code
     for epoch, start_index in enumerate(event_samples): # epoch number is 1st value, content of event_samples at epoch number (i.e. the starting index) is 2nd
     
         end_index = start_index + event_durations[epoch] # find the final sample index for an epoch
@@ -325,7 +328,7 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
         # formatting subplot
         channel_plot[plot_index].set_xlim(0,80)
         channel_plot[plot_index].set_xlabel('frequency (Hz)')
-        channel_plot[plot_index].tick_params(labelbottom=True) # shows axis values for each subplot when sharex=True
+        channel_plot[plot_index].tick_params(labelbottom=True) # shows axis values for each subplot when sharex=True, adapted from Stack Overflow
         channel_plot[plot_index].set_ylabel('power (dB)')
         channel_plot[plot_index].set_title(f'Channel {channels_to_plot[plot_index]}')
         channel_plot[plot_index].legend(['12Hz','15Hz'], loc='best')
