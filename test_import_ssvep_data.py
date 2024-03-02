@@ -30,7 +30,6 @@ data_dict = load_ssvep_data(subject=1, data_directory='SsvepData/')
 # plot the EEG data from electodes Fz and Oz for subject 1
 plot_raw_data(data=data_dict, subject=1, channels_to_plot=['Fz','Oz'])
 
-
 #%% Part 3: Extract the Epochs
 
 # extract epochs (as written for subject 1)
@@ -60,8 +59,6 @@ spectrum_db_15Hz, spectrum_db_12Hz = plot_power_spectrum(eeg_epochs_fft, fft_fre
 
 #%% Part 6: Reflect
 
-# need to include citations, more thorough answer for 4
-
 """
 1. On some electrodes, there are peaks in the spectra at 12Hz for 12Hz trials and 15Hz for 15Hz trials. What is the name for the brain signal that leads to these peaks? Where in the brain do they originate and why (i.e., what function does this brain region serve)?
     
@@ -78,12 +75,13 @@ spectrum_db_15Hz, spectrum_db_12Hz = plot_power_spectrum(eeg_epochs_fft, fft_fre
 4. Besides the sharp peaks just described, there’s a frequency spectrum where the power is roughly proportional to 1 over the frequency. This is a common pattern in biological signals and is sometimes called “1/f” or “neural noise” in EEG. But on top of that, there’s a slight upward bump around 10 Hz on some electrodes. What brain signal might cause this extra power at about 10Hz? Which channels is it most prominently observed on, and why might this be?
     
     a. It is likely that this slight increase around 10Hz is due to alpha wave activity. Alpha brain waves are commonly associated with being in a relaxed state and passive attention [4], which is likely the state in which the participant is experiencing the flashes within the trial. Moreover, the frequency of these waves tends to occur between 8-12Hz [4], further supporting this assertion given the graphical evidence: The "bump" appears to occur around a range of frequencies (around 10Hz) rather than strictly at 10Hz, suggesting the presence of a signal that exhibits a characteristic range of frequencies. The alpha band is interestingly most notable where the 50Hz signal (supposedly interference) is prevalent, though this is not a hard rule.
-    Just under half of the electrodes exhibited the 10Hz bump for either or both subjects: Fz, F4, FC1, C3, Cz, C4, CP1, CP2, P3, Pz, P4, O1, Oz, and O2 demonstrated the increased prevalence of signals with roughly 10Hz frequency. These electrodes are all more centralized.
+    Just under half of the electrodes exhibited the 10Hz bump for either or both subjects: Fz, F4, FC1, C3, Cz, C4, CP1, CP2, P3, Pz, P4, O1, Oz, and O2 demonstrated the increased prevalence of signals with roughly 10Hz frequency. These electrodes are all more centralized. Although the bump can be observed for those electrodes listed above, they are most prevalent posteriorly (especially within the occipital lobe), which is consistent with where alpha waves are generally found [5].
     
-Sources:
+References:
     [1] D. Jangraw, “13_SSVEPs,” University of Vermont, Feb. 27, 2024.
     [2] A. de Cheveigné, “ZapLine: A simple and effective method to remove power line artifacts,” NeuroImage, vol. 207, p. 116356, Feb. 2020, doi: 10.1016/j.neuroimage.2019.116356.
     [3] “Signal Quality - Recognize and achieve a good EEG signal,” brain-trainer.com. Accessed: Mar. 01, 2024. [Online]. Available: https://brain-trainer.com/support/resources/signal-quality-recognize-and-achieve-good-eeg-signal/
     [4] “Brain Waves - an overview | ScienceDirect Topics.” Accessed: Mar. 01, 2024. [Online]. Available: https://www.sciencedirect.com/topics/agricultural-and-biological-sciences/brain-waves
+    [5] “Alpha Wave - an overview | ScienceDirect Topics.” Accessed: Mar. 02, 2024. [Online]. Available: https://www.sciencedirect.com/topics/neuroscience/alpha-wave#:~:text=Alpha%20waves%20can%20be%20found,also%20occurs%20during%20REM%20sleep.
 
 """

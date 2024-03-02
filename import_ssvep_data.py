@@ -17,6 +17,9 @@ Useful abbreviations:
 
 Sources:
 
+    - Improving efficiency of updating an array: ChatGPT
+    - Understanding vectorization to improve efficiency: https://moez-62905.medium.com/mastering-numpy-tips-and-tricks-for-efficient-numerical-computing-624d44b4bebd
+    - Understanding enumerate to improve efficiency: https://blog.hubspot.com/website/python-enumerate
     - Avoiding printing "dict_keys" data type: https://blog.finxter.com/python-print-dictionary-keys-without-dict_keys/
     - Setting axis tickmarks: ChatGPT
     - Adding tickmarks when sharex=True: https://stackoverflow.com/questions/4209467/matplotlib-share-x-axis-but-dont-show-x-axis-tick-labels-for-both-just-one
@@ -28,7 +31,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 #%% Part 1: Load the Data
-def load_ssvep_data(subject, data_directory='SsvepData/'):
+def load_ssvep_data(subject, data_directory):
     """
     Description
     -----------
@@ -38,20 +41,20 @@ def load_ssvep_data(subject, data_directory='SsvepData/'):
     ----------
     subject : int
         The subject for which the data will be loaded.
-    data_directory : string, optional
-        The local directory in which the SSVEP data is contained. The default is 'SsvepData/'.
+    data_directory : string,
+        The local directory in which the SSVEP data is contained.
 
     Returns
     -------
-    data_dict : dict, size 6
+    data_dict : dict, size F, where F is the number of fields (6)
         Data from Python's MNE SSVEP dataset as a dictionary object, where the fields are relevant features of the data.
 
     """
     
     # load data
-    data = np.load(f'{data_directory}SSVEP_S{subject}.npz', allow_pickle=True)
+    data = np.load(f'{data_directory}SSVEP_S{subject}.npz', allow_pickle=True) # lib.npyio.NpzFile data type
     
-    # create data dictionary (convert existing data type to dict)
+    # explicitly convert from existing data type to dict to avoid potential complications
     data_dict = {'eeg': data['eeg'], 'channels': data['channels'], 'fs': data['fs'], 'event_samples': data['event_samples'], 'event_durations': data['event_durations'], 'event_types': data['event_types']}
     
     # printing to inform user of some data features
@@ -72,7 +75,7 @@ def plot_raw_data(data, subject, channels_to_plot):
 
     Parameters
     ----------
-    data : dict, size 6
+    data : dict, size F, where F is the number of fields (6)
         Data from Python's MNE SSVEP dataset as a dictionary object, where the fields are relevant features of the data.
     subject : int
         The subject for which the data will be plotted.
@@ -93,27 +96,19 @@ def plot_raw_data(data, subject, channels_to_plot):
     event_samples = data['event_samples']
     event_types = data['event_types']
     
-    # find sample times
-    t = [] # declare list to contain each sample time in seconds
-    # load in times in seconds for all samples
-    for sample_index in range(len(eeg.T)):
-        
-        t.append(sample_index*(1/fs)) # add to time list by dividing sample number by sample frequency
+    # find all sample times
+    t = np.arange(len(eeg.T))*(1/fs) # number of samples spaced by 1, subsequently converted to time
     
     # find event samples and times
-    event_intervals = [] # list to contain samples for event intervals
-    # find event intervals using corresponding sample index and duration
-    for sample_index in range(len(event_samples)):
-      
-        event_start = event_samples[sample_index]
-        event_finish = int(event_samples[sample_index]+event_durations[sample_index])
-        
-        event_intervals.append((event_start, event_finish))
-        
-    # times in seconds for event samples
-    for sample_index in range(len(event_samples)):
-        
-        event_intervals[sample_index] = np.array(event_intervals[sample_index])/fs # convert each event sample number to a time, must convert to array first
+    event_intervals = np.zeros([len(event_samples),2]) # array to contain interval times
+    # find the end sample indices of the events
+    event_ends = event_samples + event_durations # event_samples contains the start samples
+    # for each event (:), 0 is the interval start time, and 1 is the interval end time
+    event_intervals[:,0] = event_samples/fs # convert start samples to times
+    event_intervals[:,1] = event_ends/fs # convert end samples to times
+    
+    # inform user of plotting
+    print('\nPlotting raw data...')
     
     # initialize figure
     figure, sub_figure = plt.subplots(2, sharex=True)
@@ -121,32 +116,36 @@ def plot_raw_data(data, subject, channels_to_plot):
     # top subplot containing flash frequency over span of event
     for event_number, interval in enumerate(event_intervals):
     
+        # determine the event frequency to plot
         if event_types[event_number] == "12hz":
-            sub_figure[0].hlines(xmin = interval[0], xmax = interval[1], y = 12,label = 'o')
-            sub_figure[0].plot([interval[0], interval[1]], [12,12], 'bo')
+            event_frequency = 12
     
-        else:
-            sub_figure[0].hlines(xmin = interval[0], xmax = interval[1], y = 15,label = 'o')
-            sub_figure[0].plot([interval[0], interval[1]], [15,15], 'bo')
+        else: 
+            event_frequency = 15
+        
+        # plottting the event frequency
+        sub_figure[0].hlines(xmin=interval[0], xmax=interval[1], y=event_frequency, label='o') # line
+        sub_figure[0].plot([interval[0], interval[1]], [event_frequency,event_frequency], 'bo') # start and end markers
     
     # bottom subplot contain raw data from specified electrodes
     for channel_number, channel_name in enumerate(channels_to_plot):
       
-        channel_index = channels.index(channel_name) # index of channel of interest considering all channels
-        
+        # identify EEG data to plot
+        channel_index = channels.index(channel_name) # index of channel of interest considering all channels      
         eeg_data = data['eeg'][channel_index] # EEG data for the channel
     
-        sub_figure[1].plot(t, eeg_data*(10**6), label=channel_name) # plot EEG data in µV from channel
+        # plot EEG data in µV from channel
+        sub_figure[1].plot(t, eeg_data*(10**6), label=channel_name) 
     
     # format figure
-    # subplot 1
+    # subplot 1: sample frequency at given time
     sub_figure[0].set_xlabel('time(s)')
     sub_figure[0].set_ylabel('Flash frequency')
     sub_figure[0].set_yticks([12,15])
     sub_figure[0].set_yticklabels(['12Hz','15Hz'])
     sub_figure[0].grid()
     
-    # subplot 2
+    # subplot 2: EEG data over time
     sub_figure[1].set_xlabel('time (s)')
     sub_figure[1].set_ylabel('Voltage (µV)')
     sub_figure[1].legend(loc='best') # place legend in best location given data
@@ -160,6 +159,9 @@ def plot_raw_data(data, subject, channels_to_plot):
     
     # save image
     plt.savefig(f'SSVEP_S{subject}_rawdata.png')
+    
+    # inform user of plotting completion
+    print('Plotting raw data complete.')
 
 #%% Part 3: Extract the Epochs
 
@@ -171,7 +173,7 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
 
     Parameters
     ----------
-    data : dict, size 6
+    data : dict, size F, where F is the number of fields (6)
         Data from Python's MNE SSVEP dataset as a dictionary object, where the fields are relevant features of the data.
     epoch_start_time : int, optional
         The relative time in seconds at which the epoch starts. The default is 0.
@@ -193,26 +195,23 @@ def epoch_ssvep_data(data_dict, epoch_start_time=0, epoch_end_time=20):
     eeg = data_dict['eeg']
     channels = list(data_dict['channels']) # convert to list
     fs = data_dict['fs']
-    event_durations = data_dict['event_durations']
+    event_durations = data_dict['event_durations'].astype(int) # cast to contain int instead of float
     event_samples = data_dict['event_samples']
     event_types = data_dict['event_types']
-    time_per_epoch = int(fs*(epoch_end_time-epoch_start_time)) # convert to int
+    samples_per_epoch = int(fs*(epoch_end_time-epoch_start_time)) # convert to int
     
     # preallocate array to contain epochs
-    eeg_epochs = np.zeros([len(event_samples),len(channels), time_per_epoch])
+    eeg_epochs = np.zeros([len(event_samples),len(channels), samples_per_epoch])
     
-    # generate the epochs
-    for epoch_index in range(len(event_samples)): # each item in event_samples is the corresponding epoch start time, effectively making it the epoch_index
+    # load data into array by epoch
+    for epoch, start_index in enumerate(event_samples): # epoch number is 1st value, content of event_samples at epoch number (i.e. the starting index) is 2nd
+    
+        end_index = start_index + event_durations[epoch] # find the final sample index for an epoch
         
-        for channel_index in range(len(channels)): # organize data by channel
-            
-            start_index = event_samples[epoch_index] # find start index for EEG data
-            end_index = start_index + int(event_durations[epoch_index]) # find end index for EEG data
-
-            eeg_epochs[epoch_index][channel_index] = eeg[channel_index][start_index:end_index] # extract EEG data in epoch for a channel over epoch window
+        eeg_epochs[epoch] = eeg[:,start_index:end_index] # for the epoch, add EEG data from all channels (:) for every sample between the start and end indices (start_index:end_index)
             
     # create array containing the times for each sample in the epoch
-    epoch_times = np.linspace(epoch_start_time, epoch_end_time, time_per_epoch)
+    epoch_times = np.linspace(epoch_start_time, epoch_end_time, samples_per_epoch)
     
     # create boolean array containing True if the event is a 15Hz sample, False if 12Hz
     is_trial_15Hz = np.array([True if event == '15hz' else False for event in event_types])
@@ -247,7 +246,7 @@ def get_frequency_spectrum(eeg_epochs, fs):
     eeg_epochs_fft = np.fft.rfft(eeg_epochs)
     
     # find the corresponding frequencies from the epoched EEG data
-    fft_frequencies = np.fft.rfftfreq(n=eeg_epochs.shape[-1], d=1/fs) # n is the number of samples in the signal (dimension 2 (final dimension) in eeg_epochs), d is the inverse of sampling frequency
+    fft_frequencies = np.fft.rfftfreq(n=eeg_epochs.shape[-1], d=1/fs) # n is the number of samples in the signal (final dimension) in eeg_epochs), d is the inverse of sampling frequency
   
     return eeg_epochs_fft, fft_frequencies
 
@@ -308,6 +307,9 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
     spectrum_db_12Hz = 10*(np.log10(normalized_event_12_power_mean))
     
     # plotting
+    # inform user of plotting
+    print('\nPlotting frequency data...')
+    
     # isolate channel being plotted
     channel_to_plot = [channels.index(channel_name) for channel_name in channels_to_plot]
     
@@ -323,7 +325,7 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
         # formatting subplot
         channel_plot[plot_index].set_xlim(0,80)
         channel_plot[plot_index].set_xlabel('frequency (Hz)')
-        channel_plot[plot_index].tick_params(labelbottom=True) # shows numerical frequency values for each subplot when sharex=True
+        channel_plot[plot_index].tick_params(labelbottom=True) # shows axis values for each subplot when sharex=True
         channel_plot[plot_index].set_ylabel('power (dB)')
         channel_plot[plot_index].set_title(f'Channel {channels_to_plot[plot_index]}')
         channel_plot[plot_index].legend(['12Hz','15Hz'], loc='best')
@@ -339,5 +341,8 @@ def plot_power_spectrum(eeg_epochs_fft, fft_frequencies, is_trial_15Hz, channels
     
     # save image
     plt.savefig(f'SSVEP_S{subject}_frequency_content.png')
+    
+    # inform user of plotting completion
+    print('Plotting frequency data complete.')
         
     return spectrum_db_15Hz, spectrum_db_12Hz
